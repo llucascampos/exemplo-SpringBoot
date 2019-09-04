@@ -2,7 +2,7 @@ package br.com.fontedeestudo.cursoparaestudo.controller.exception;
 
 import java.io.Serializable;
 
-// Classe para retornar um objeto de erro 
+// Classe para retornar um objeto de erro com os dados que desejo
 
 public class StandardError implements Serializable {
 	private static final long serialVersionUID = 1L;

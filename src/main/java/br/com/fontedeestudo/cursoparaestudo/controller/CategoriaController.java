@@ -4,12 +4,16 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -32,7 +36,8 @@ public class CategoriaController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST)
-	public  ResponseEntity<Object> insert(@RequestBody Categoria obj){
+	public  ResponseEntity<Object> insert(@Valid @RequestBody CategoriaDTO objDto){  //@Valid para fazer a validação incluida na classe dto
+		Categoria obj = catService.fromDto(objDto);  //convertendo categoria obj para objeto da entidade atravez do metodo criado na camada de serviço
 		obj = catService.insert(obj);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
 		return ResponseEntity.created(uri).build();
@@ -57,4 +62,17 @@ public class CategoriaController {
 		List<CategoriaDTO> listaDto = lista.stream().map(obj -> new CategoriaDTO(obj)).collect(Collectors.toList()); // coonvertendo lista de categorias para uma lista de categoriasDTO apenas com os dados que quero
 		return ResponseEntity.ok().body(listaDto);
 	}
+	
+	//pegando com paginação, pegar valor via parametro e naoo na url
+	@RequestMapping(value="/page",method=RequestMethod.GET)
+	public ResponseEntity<Page<CategoriaDTO>> findPage(@RequestParam(value="nPage", defaultValue="0")Integer nPage, 
+													   @RequestParam(value="linesPerPage", defaultValue="24")Integer linesPerPage, 
+													   @RequestParam(value="orderBy", defaultValue="nome")String orderBy, 
+													   @RequestParam(value="direction", defaultValue="ASC")String direction) {
+		Page<Categoria> lista = catService.findPage(nPage, linesPerPage, orderBy, direction);
+		Page<CategoriaDTO> listaDto = lista.map(obj -> new CategoriaDTO(obj)); // coonvertendo lista paginada de categorias para uma lista de categoriasDTO apenas com os dados que quero
+		return ResponseEntity.ok().body(listaDto);
+	}
+	
+	
 }

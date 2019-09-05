@@ -63,7 +63,7 @@ public class CategoriaController {
 		return ResponseEntity.ok().body(listaDto);
 	}
 	
-	//pegando com paginação, pegar valor via parametro e naoo na url
+	//pegando com paginação, pegar valor via parametro na url (http://localhost:8080/categorias/page?linesPerPage=3&nPage=2)
 	@RequestMapping(value="/page",method=RequestMethod.GET)
 	public ResponseEntity<Page<CategoriaDTO>> findPage(@RequestParam(value="nPage", defaultValue="0")Integer nPage, 
 													   @RequestParam(value="linesPerPage", defaultValue="24")Integer linesPerPage, 

@@ -33,8 +33,10 @@ public class CategoriaService {
 	}
 	
 	public Categoria update(Categoria obj) {
-		find(obj.getId());
-		return repository.save(obj);
+		// procurando o cliente que vai ser atualizado pelo id que chegou como parametro
+		Categoria newObj = find(obj.getId());
+		updateData(newObj, obj); 
+		return repository.save(newObj);
 	}
 	
 	public void delete(Integer id) {
@@ -63,6 +65,11 @@ public class CategoriaService {
 	//metodo para converter DTO para objeto da entidade categoria
 	public Categoria fromDto(CategoriaDTO objDto) {
 		return new Categoria(objDto.getId(), objDto.getNome());
+	}
+	
+	//private porque é um metodo auxiliar de dentro da classe mesmo, nao sera usado fora
+	private void updateData(Categoria newObj, Categoria obj) {
+		newObj.setNome(obj.getNome());
 	}
 	
 		

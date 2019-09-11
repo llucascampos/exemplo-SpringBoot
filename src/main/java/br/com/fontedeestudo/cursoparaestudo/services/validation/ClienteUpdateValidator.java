@@ -2,44 +2,46 @@ package br.com.fontedeestudo.cursoparaestudo.services.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.HandlerMapping;
 
 import br.com.fontedeestudo.cursoparaestudo.controller.exception.FieldMessage;
 import br.com.fontedeestudo.cursoparaestudo.domain.Cliente;
-import br.com.fontedeestudo.cursoparaestudo.domain.enums.TipoCliente;
-import br.com.fontedeestudo.cursoparaestudo.dto.ClienteNewDTO;
+import br.com.fontedeestudo.cursoparaestudo.dto.ClienteDTO;
 import br.com.fontedeestudo.cursoparaestudo.repositories.ClienteRepository;
-import br.com.fontedeestudo.cursoparaestudo.services.validation.utils.BR;
 
 // classe para criar validação personalida para validar tipo de pessoa (classe da validação para a anotação)
-public class ClienteInsertValidator implements ConstraintValidator<ClienteInsert, ClienteNewDTO> {
+public class ClienteUpdateValidator implements ConstraintValidator<ClienteUpdate, ClienteDTO> {
+	
+	@Autowired
+	private HttpServletRequest request; // tem uma função que permiti obter o parametro passado na URL
 	
 	@Autowired
 	private ClienteRepository cliRepository;
 	
 	@Override
-	public void initialize(ClienteInsert ann) {
+	public void initialize(ClienteUpdate ann) {
 	}
 
 	//metodo isValid ira validar o objeto passsado como parametro, ele deve retornar true se for valido
 	@Override
-	public boolean isValid(ClienteNewDTO objDto, ConstraintValidatorContext context) {
+	public boolean isValid(ClienteDTO objDto, ConstraintValidatorContext context) {
+		
+		@SuppressWarnings("unchecked")
+		Map<String, String> map =  (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE); // para pegar o id que vem na URL
+		Integer urlId = Integer.parseInt(map.get("id"));
+		
 		List<FieldMessage> list = new ArrayList<>();  // instanciando o objeto criado para receber o nome do campo e a mensagem que esta invalida
 
-			//se o for pessoa fisica e não for valido o "isValidCNPJ
-		if(objDto.getTipo().equals(TipoCliente.PESSOAFISICA.getCod()) && !BR.isValidCPF(objDto.getCpfOuCnpj())) {
-			list.add(new FieldMessage("cpfOuCnpj", "CPF Invalido"));
-		}
-		if(objDto.getTipo().equals(TipoCliente.PESSOAJURIDICA.getCod()) && !BR.isValidCNPJ(objDto.getCpfOuCnpj())) {
-			list.add(new FieldMessage("cpfOuCnpj", "CNPJ Invalido"));
-		}
-		
+		// Só permiti atualizar se o usuario estiver atualizando o seu proprio email
 		Cliente aux = cliRepository.findByEmail(objDto.getEmail());
-		if(aux != null) {
+		if(aux != null && !aux.getId().equals(urlId)) {
 			list.add(new FieldMessage("email ", "Email já existente"));
 		}
 
